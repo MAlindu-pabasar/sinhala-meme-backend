@@ -1,0 +1,5 @@
+uploads/
+__pycache__/
+*.db
+.env
+sinhala_meme_model.pth

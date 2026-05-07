@@ -7,6 +7,7 @@ import pytesseract
 from PIL import Image
 import sqlite3
 from datetime import datetime
+import platform
 
 # Import your AI model testing function
 from test_meme import test_single_meme 
@@ -14,7 +15,10 @@ from test_meme import test_single_meme
 # ==========================================
 # ⚙️ Tesseract OCR Configuration
 # ==========================================
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if platform.system() == "Windows":
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+else:
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 app = FastAPI()
 
@@ -158,5 +162,20 @@ def clear_history():
         conn.commit()
         conn.close()
         return {"status": "success", "message": "History cleared successfully"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# ==========================================
+# 🗑️ Delete a single record by ID
+# ==========================================
+@app.delete("/delete-history/{record_id}")
+def delete_single_record(record_id: int):
+    try:
+        conn = sqlite3.connect('meme_database.db')
+        c = conn.cursor()
+        c.execute("DELETE FROM history WHERE id = ?", (record_id,))
+        conn.commit()
+        conn.close()
+        return {"status": "success", "message": f"Record {record_id} deleted"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
